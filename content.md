@@ -655,7 +655,7 @@ end
 
 Now, let's have a look at the `create` action in the `MoviesController`:
 
-```ruby{8-10}
+```ruby
 # app/controllers/movies_controller.rb
 
 class MoviesController < ApplicationController
@@ -676,15 +676,15 @@ class MoviesController < ApplicationController
   # ...
 ```
 
-In AD1, we instantianted a `.new` record, take columns from the form with the query string and `params` hash, and assign them to the columns in our `the_movie` database record. Then we ask if `the_movie` is `.valid?`, which returns true or false based on whether all of the validation rules in the `Movie` model pass or not.
+We instantiated a `.new` record, take columns from the form with the query string and `params` hash, and assign them to the columns in our `the_movie` database record. Then we ask if `the_movie` is `.valid?`, which returns true or false based on whether all of the validation rules in the `Movie` model pass or not.
 
 If it _is_ valid, we `.save` and redirect. If it is _not_ valid, we just redirect. The only difference with the redirection is that we have different `:notice` and `:alert` messages. 
 
-But we aren't doing anything with that `:alert` message yet, so we don't get any notification on our `Movie` model that something went wrong if a validation doesn't pass. And we're just redirecting back to `/movies` rather than staying on the form. Use the **/movies/new** form to add a movie with and without a title and see how it works.
+But we aren't doing anything with that `:alert` message yet, so we don't get any notification on our `Movie` model that something went wrong if a validation doesn't pass. And we're just redirecting back to `/movies` rather than staying on the form. Use the `/movies/new` form to add a movie with and without a title and see how it works.
 
 Now might be a good time to add a link to the new movie form on the index page:
 
-```erb
+```erb{9}
 <!-- app/views/movies/index.html.erb -->
 
 <div>
@@ -696,22 +696,16 @@ Now might be a good time to add a link to the new movie form on the index page:
   <a href="/movies/new">Add a new movie</a>
   </div>
 </div>
-...
 ```
 
 Let's improve the UI on the form.
 
-As in AD1, we can add the notice and alert messages to the application layout, so they render on every page:
+We can add the notice and alert messages to the application layout, so that they render on every page:
 
-```erb
+```erb{5-6}
 <!-- app/views/layouts/application.html.erb -->
 
-<!DOCTYPE html>
-<html>
-  <head>
-    ...
-  </head>
-
+<!-- ... -->
   <body>
     <%= notice %>
     <%= alert %>
@@ -720,13 +714,10 @@ As in AD1, we can add the notice and alert messages to the application layout, s
   </body>
 </html>
 ```
-{: mark_lines="10-11" }
 
 Now the messages will appear on top of the page, which is rendered at the location of `<%= yield %>`. 
 
-Try to enter a movie with a blank title on **/movies/new** and you will see the `alert` message, which is being generated in the controller from `the_movie.errors.full_messages.to_sentence`. 
-
-There's a lot of stuff there. Do you remember notices and redirects? Do you remember the `.errors` collection that we had on the object? Errors tell us which validations failed, and then we're taking the full message strings with `.full_messages`, and then we are joining them together with `.to_sentence` for our display.
+Try to enter a movie with a blank title at `/movies/new` and you will see the `alert` message, which is being generated in the controller from `the_movie.errors.full_messages.to_sentence`. 
 
 Great! But let's also keep the user on the form when they mess something up. In the `MoviesController` file, change this:
 
@@ -736,53 +727,34 @@ redirect_to("/movies", { :alert => the_movie.errors.full_messages.to_sentence })
 
 to this:
 
-```ruby
+```ruby{1:(21-25)}
 redirect_to("/movies/new", { :alert => the_movie.errors.full_messages.to_sentence })
 ```
 
-Now, when the user trys to input a blank movie, they remain on the form and are given an error message. But all of their progress on the form has been wiped out! What if they wrote a long description? That would be gone and they would need to retype it. Not great.
+Now, when the user tries to input a blank movie, they remain on the form and are given an error message. But all of their progress on the form has been wiped out! What if they wrote a long description? That would be gone and they would need to retype it. Not great.
 
-Let's figure out how to keep the data in the form. When `the_movie.valid?` is false, and I follow that `else` branch of the control flow in my controller `create` form, instead of wiping out all of the values, I would like to prepopulate the form with the data that has already been entered. We could do this with `cookies`, but let's see another (maybe more straightforward) way.
+When `the_movie.valid?` is false, and I follow the `else` branch of the control flow in my controller `create` action, instead of wiping out all of the values, I would like to prepopulate the form with the data that has already been entered. We could do this with `cookies`, but let's see another (maybe more straightforward) way.
 
-When `the_movie.valid?` returns false, and we go to the `else` statement, you can see we are still using `the_movie` object to get the `.errors`. So `the_movie` object is still available to us in that branch. And prior to that `.valid?` method, we _already stored values_ in the attributes of this new object that we just instantiated:
+When `the_movie.valid?` returns false, and we go to the `else` statement, you can see we are still using `the_movie` object to get the `.errors`. So `the_movie` object is still available to us in that branch. And prior to that `.valid?` method, we _already stored values_ in the attributes of this new object that we just instantiated.
+
+That means, `the_movie` has everything we need to redraw the form with the entered data. However, when we `redirect_to` a new page, it is the same as the user typing the name into their address bar. Which means we lose the access to anything from this `create` action. It begins a whole new RCAV starting from `/movies/new`, going to the `new` action and rendering the template without any instance variables defined in that `new` action.
 
 ```ruby
 # app/controllers/movies_controller.rb
 
-class MoviesController < ApplicationController
+# ...
   def new
     render template: "movies/new"
   end
-  
-  ...
-  
-  def create
-    the_movie = Movie.new
-    the_movie.title = params.fetch("query_title")
-    the_movie.description = params.fetch("query_description")
-    the_movie.released = params.fetch("query_released", false)
-
-    if the_movie.valid?
-      the_movie.save
-      redirect_to("/movies", { :notice => "Movie created successfully." })
-    else
-      redirect_to("/movies/new", { :alert => the_movie.errors.full_messages.to_sentence })
-    end
-  end
-...
+# ...
 ```
 
-That means, `the_movie` has everything we need to redraw the form with the entered data. However, when we `redirect_to` a new page, it is the same as the user typing the name into their address bar. Which means we lose the access to anything from this `create` action. It begins a whole new RCAV starting from **/movies/new**, going to the `new` action and rendering the template without any instance variables defined in that `new` action.
+Okay, then rather than `redirect_to`, let's instead make `the_movie` an instance variable (`@the_movie`) and `render`:
 
-```ruby
-  def new
-    render template: "movies/new"
-  end
-```
+```ruby{14}
+# app/controllers/movies_controller.rb
 
-Okay, then rather than `redirect_to`, let's instead make `the_movie` and instance variable (`@the_movie`) and `render`:
-
-```ruby
+# ...
   def create
     @the_movie = Movie.new
     @the_movie.title = params.fetch("query_title")
@@ -793,12 +765,11 @@ Okay, then rather than `redirect_to`, let's instead make `the_movie` and instanc
       @the_movie.save
       redirect_to("/movies", { :notice => "Movie created successfully." })
     else
-      # redirect_to("/movies/new", { :alert => the_movie.errors.full_messages.to_sentence })
       render template: "movies/with_errors"
     end
   end
+# ...
 ```
-{: mark_lines="2 11-12" }
 
 Now we create that new view template where we have access to the `@the_movie` object:
 
@@ -809,9 +780,9 @@ Now we create that new view template where we have access to the `@the_movie` ob
 <%= @the_movies.errors.full_messages.to_sentence %>
 ```
 
-And now, if we enter a movie with a blank title at **/movies/new**, we will be taken to our page with the `ActiveRecord` object and the errors. And we can see that the object does contain any information that the user filled out!
+And now, if we enter a movie with a blank title at `/movies/new`, we will be taken to our page with the `ActiveRecord` object and the errors. And we can see that the object does contain any information that the user filled out!
 
-Let's copy-paste from the form from our other `new.html.erb` template into this view template, and prepopulate the values with our instance variable:
+Let's copy-paste the form from our other `new.html.erb` template into this `with_errors.html.erb` view template, and prepopulate the values with our instance variable:
 
 ```erb
 <!-- app/views/movies/with_errors.html.erb -->
@@ -850,14 +821,13 @@ Let's copy-paste from the form from our other `new.html.erb` template into this 
   </button>
 </form>
 ```
-{: mark_lines="15 23" }
 
 (The HTML `<textarea>` element does not have a `value` attribute, so we had to prepopulate the field itself.)
 
 We didn't add the `alert:` to our `render template: "movies/with_errors"` line, so we aren't getting any message if we mess things up, but at least the form is staying prepopulated now. Let's add some messages though:
 
 ```erb
-<!-- app/views/movies/new.html.erb -->
+<!-- app/views/movies/with_errors.html.erb -->
 
 <h2>
   Add a new movie
@@ -868,45 +838,31 @@ We didn't add the `alert:` to our `render template: "movies/with_errors"` line, 
 <% end %>
 
 <form action="/movies" method="post">
-  ...
 ```
-{: mark_lines="7-9" }
 
 Test out the form. Do you see error messages when you leave something blank? Does the form stay prepoulated? What about when you succeed? Are you redirected to the index page with your movie added to the table? Yes to all? Great!
 
-## Reusing `new` View Template 02:40:35 to
+## Reusing `new` view template
 
-Let's think about this. In the `MoviesController#create` action, we changed the "sad" branch, where `@the_movie` is _not_ valid:
+In the `MoviesController#create` action, we changed the "sad" branch, where `@the_movie` is _not_ valid:
 
 ```ruby
-    ...
+  # ...
   def create
-    @the_movie = Movie.new
-    @the_movie.title = params.fetch("query_title")
-    @the_movie.description = params.fetch("query_description")
-    @the_movie.released = params.fetch("query_released", false)
-
+    # ...
     if @the_movie.valid?
       @the_movie.save
       redirect_to("/movies", { :notice => "Movie created successfully." })
     else
-      # redirect_to("/movies/new", { :alert => @the_movie.errors.full_messages.to_sentence })
-      render template: movies/with_errors
+      render template: "movies/with_errors"
     end
-  end
-    ...
+  # ...
 ```
 
-Because we're rendering a template rather than redirecting, we have access to `@the_movie` in the `with_errors.html.erb` template. It was _not_ valid for saving, but that doesn't mean the variable was deleted or further modified. It just never entered the database. Any of the values that we assinged in the `create` action (e.g., `@the_movie.title = params.fetch("query_title")`) are still available to prepopulate the form in the template.
+Because we're rendering a template rather than redirecting, we have access to `@the_movie` in the `with_errors.html.erb` template. It was _not_ valid for saving, but that doesn't mean the variable was deleted or further modified. It just never entered the database. Any of the values that we assigned in the `create` action (e.g., `@the_movie.title = params.fetch("query_title")`) are still available to prepopulate the form in the template.
 
 <aside markdown="1">
-Playing with a `Movie` object in the `rails console` is a good way to understand what is happening. At a terminal type:
-
-```bash
-rails console
-```
-
-Then in the IRB console:
+Playing with a `Movie` object in the `rails console` is a good way to understand what is happening:
 
 ```ruby
 pry(main)> m = Movie.new 
@@ -923,66 +879,40 @@ pry(main)> m.errors.full_messages
 And if you print `m` or do an `m.inspect`, you will see that the `title` is still filled in despite the save error.
 </aside>
 
-This new template, `with_errors`, that we are using to `create` a  new object is similar to what we've done in the past with edit forms. In the case of edit or `update` actions, we looked up an existing object in our database using the ID, and then we prepopulated the whole form using value attributes taken from that object.
+This new template, `with_errors`, that we are using to `create` a new object is similar to what we've done in the past with edit forms. In the case of edit or `update` actions, we looked up an existing object in our database using the ID, and then we prepopulated the whole form using value attributes taken from that object.
 
 Similarly, now we're using the object that we _attempted_ to save, to prepopulate the `with_errors` form. Interesting similarity. Can we exploit that?
 
-Indeed! Copy-paste the contents of `app/views/movies/with_errors.html.erb` to `app/views/movies/new.html.erb`:
+Indeed! Copy-paste the contents of `app/views/movies/with_errors.html.erb` to `app/views/movies/new.html.erb`. Also, change the render statement in `MoviesController#create` on the "sad" branch to point to this template:
 
-```erb
-<!-- app/views/movies/new.html.erb -->
-
-<h2>
-  Add a new movie
-</h2>
-
-<% @the_movie.errors.full_messages.each do |msg| %>
-  <li><%= msg %></li>
-<% end %>
-
-<form action="/movies" method="post">
-  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
-
-  <div>
-    <label for="title_box">
-      Title
-    </label>
-
-    <input type="text" id="title_box" name="query_title" value="<%= @the_movie.title %>">
-  ...
-```
-{: mark_lines="" }
-
-And also change the render statement in `MoviesController#create` on the "sad" branch to point to this template:
-
-```ruby
-    ...
+```ruby{8:(25-35)}
+  # ...
+  def create
+    # ...
     if @the_movie.valid?
       @the_movie.save
       redirect_to("/movies", { :notice => "Movie created successfully." })
     else
-      # redirect_to("/movies/new", { :alert => the_movie.errors.full_messages.to_sentence })
-      # render template: "movies/with_errors"
       render template: "movies/new"
     end
-    ...
+  # ...
 ```
 
 Try the new movie form again. Still working like before? Good, then we can delete the `with_errors.html.erb` file.
 
-However, there's one issue. What if I refresh the **/movies/new** page by typing it into the address bar (i.e., by triggering the `MoviesController#new` action)?
+However, there's one issue. What if I refresh the `/movies/new` page by typing it into the address bar (i.e., by triggering the `MoviesController#new` action)?
 
-We get an error `undefined method 'errors' for nil`. That's because `@the_movie` is not defined in our `MoviesController#new` action that gets trigged when a user visits **/movies/new**!
+We get an error `undefined method 'errors' for nil`. That's because `@the_movie` is not defined in our `MoviesController#new` action that gets triggered when a user visits `/movies/new`!
 
 We can solve this with a little hack:
 
 ```ruby
-  ...
+  # ...
   def new
     @the_movie = Movie.new
     render template: "movies/new"
   end
-  ...
+  # ...
 ```
 
 We create the variable that the template wants, by just putting a blank brand new movie instance in it. We don't try to `.save` or call `.valid`, which means the validations don't get run. 
