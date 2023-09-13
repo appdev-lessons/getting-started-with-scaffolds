@@ -5,15 +5,15 @@
 <div class="bg-red-100 py-1 px-5" markdown="1">
 **Please note**, the video is from a previous iteration of the project, so there are some differences:
 
+- The project was previously called `ad2-getting-started`, but it has been renamed to `getting-started-with-scaffolds`
 - I am using Gitpod as my cloud editor, so the interface looks a bit different.
 - Anything contained in the project "README" is now contained in this Lesson
-- I use a graphical user interface at the URL path `/git` to commit and push, _you_ should use [the VSCode built in workflow in this lesson](https://learn.firstdraft.com/lessons/50-git-commit-and-push)
 - I use `bin/server` to start my live app preview, _you_ should use `bin/dev`
-- I use `rails sample_data`, _you_ should use `rake sample_data`
+- I use `rails db:migrate`, _you_ should use `rake db:migrate`
 - You should drop the `.html.erb` when rendering a view template:
     `render({ :template => "photo_templates/index" })` 
     _instead of_ 
-    `render({ :template => "photo_templates/index.html.erb" })`)
+    `render({ :template => "photo_templates/index.html.erb" })`
 </div>
 
 Did you read the differences above? Good! Then [here is a walkthrough video for this project.](https://share.descript.com/view/nTBab1wF2JO)
@@ -22,321 +22,142 @@ The lesson below contains some additional details, but the video should mostly g
 
 ## Getting started
 
+There is no target for this app, but the goal is to rebuild Must See Movies using industry standard (i.e. Professional) code.
 
-## Starting our Workspace 00:45:00 to 00:48:00
+This project includes a few basic automated tests, so click on this button to get started:
 
-The first project for this course is called [AD2: Getting started](https://github.com/appdev-projects/ad2-getting-started). As usual from AD1, we need to open the Gitpod workspace for our project. If you need, refresh yourself on setting up Gitpod workspaces with the [AD1 technical material](https://learn.firstdraft.com/lessons/29). 
+LTI{Load Getting Started with Scaffolds assignment}(https://grades.firstdraft.com/launch)[S9ymPy6WCsn18gLbByVbZQ7k]{vfdtzJb5bLYqYwuqgeRKpc5d}(5)[Getting Started with Scaffolds Project]
 
-Once your workspace is up, do a `bin/setup` to ensure all the setup is run.
+Launch your live app preview with `bin/dev`, and you will be greeted by a brand new, blank Rails app. Let's get started filling it in.
 
-In AD1, we used a slimmed down Rails project that didn't include all the out-of-the-box Rails features. We didn't need them, and they slow down the setup process. But, in AD2 we're including more in our projects. Specifically, we'll use the [vanilla-rails](https://github.com/appdev-projects/vanilla-rails) repository. Setup might take a little longer and we're just going to have to to get used to that.
+## `draft:resource`
 
-When the `bin/setup` command finishes, do a `bin/server` and check out the app with the app preview in a new tab. 
+This bash prompt command represents the culmination of what we've learned thus far:
 
-## `draft:resource` 00:48:00 to 00:57:30
-
-The homepage of the app is just the blank Ruby on Rails welcome page. We can see if there are any routes in our app by checking in on `config/routes.rb`:
-
-```ruby
-# config/routes.rb
-
-Rails.application.routes.draw do
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
-end
 ```
-{: mark_lines=""}
-
-and we'll see that this is actually just an empty app.
-
-We're going to use this empty space to review things, and think about where we're headed. 
-
-As a first step, we have a couple of big references of all the Ruby stuff that we encounted in AD1: [here](https://learn.firstdraft.com/lessons/33) and [here](https://learn.firstdraft.com/lessons/34). You may want to scan through these and make sure that it mostly makes sense to you.
-
-Feel good about basic Ruby methods, syntax, etc.? Good, then the first thing we want to do in our blank app is generate a resource, examine that code, and make sure that we feel pretty good about what's happening when we invoke `draft:resource`.
-
-This command essentially represents the culmination of what we learned in AD1:
-
-```bash
 rails generate draft:resource movie title:string description:text released:boolean
 ```
 
-Copy this command and run it in a terminal tab.
+If you try and run it now, you will get an error. That's because _we_ wrote the `draft:resource` generator and it doesn't come with Rails out of the box!
 
-Uhoh. RTEM!
-
-```bash
-Running via Spring preloader in process 1045
-Could not find generator 'draft:resource'. 
-Run `bin/rails generate --help` for more options.
-```
-
-Why couldn't Rails find the generator? That's because _we_ wrote the `draft:resource` generator and it doesn't come with Rails out of the box!
-
-We wrote it in order to make it easier to learn in AD1. But, moving forward, I don't want you to use the `draft:resource` generator anymore. We're going to learn more powerful generators that come with Rails. _So this is the last time where I'm going to generate one of these._
-
-Because we aren't going to be using this generator anymore, we didn't include it in the [base app that you cloned](https://github.com/appdev-projects/vanilla-rails). That means we're going to have to actually pull that generator in ourselves.
+We wrote it in order to make it easier to learn in the early stages. But, moving forward, you should avoid using the `draft:resource` generator. We're going to learn more powerful generators that come with Rails. _So this is the last time where I'm going to generate one of these._
 
 Let's head over to our `Gemfile`, which is located in the root folder, and pull in the `draft_generator` gem:
 
-```ruby
+```ruby{8}
 # Gemfile
 
-source 'https://rubygems.org'
+source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.0.3'
+ruby "3.2.1"
 
-gem "draft_generators", :github => "firstdraft/draft_generators"
-
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
-...
+gem "draft_generators"
+# ...
 ```
-{: mark_lines="8"}
 
-Note that we also needed to include the Github repository path where the gem can be found. 
+Now, at the bash prompt run:
 
-Now, back in a terminal tab, run 
-
-```bash
+```
 bundle install
 ``` 
 
 (Or just `bundle` for short.) 
 
-This command will go get all the gems from our `Gemfile` and install them. And that's how we add gems. TIL!
+This command will go get all the gems from our `Gemfile` and install them. 
 
-Again, ideally this is the last time we're going to use the `draft:resource` generator, so try to avoid doing this in the future. I know it's tempting because we're very comfortable with the draft generators, but we want to try and force ourselves to level up now.
+Now try the bash prompt command again:
 
-Now try again the command:
-
-```bash
+```
 rails generate draft:resource movie title:string description:text released:boolean
 ```
 
-And this time it ought to work, since we pulled in that gem from GitHub:
+That should work, and output:
 
-```bash
-Running via Spring preloader in process 1372
-      create  app/controllers/movies_controller.rb
-      invoke  active_record
-      create    db/migrate/20230310220332_create_movies.rb
-      create    app/models/movie.rb
-      invoke    test_unit
-      create      test/models/movie_test.rb
-      create      test/fixtures/movies.yml
-      create  app/views/movies
-      create  app/views/movies/index.html.erb
-      create  app/views/movies/show.html.erb
-       route  RESTful routes
-      insert  config/routes.rb
+```
+    create  app/controllers/movies_controller.rb
+    invoke  active_record
+    create    db/migrate/20230913004129_create_movies.rb
+    create    app/models/movie.rb
+      exist  app/views/movies
+    create  app/views/movies/index.html.erb
+    create  app/views/movies/show.html.erb
+      route  RESTful routes
+    insert  config/routes.rb
 ```
 
-Let's go check out some of these files that were created, starting back with our `routes.rb`: 
+As usual, we need to `rake db:migrate` to run the pending migrations.
 
-```ruby
-# config/routes.rb
+Start your live app preview with `bin/dev` and visit `/movies`. This is the `movies#index` action page, where there is a form to add things to the table in our database.
 
-Rails.application.routes.draw do
-  # Routes for the Movie resource:
+Try to add one. What happens? 
 
-  # CREATE
-  post("/insert_movie", { :controller => "movies", :action => "create" })
-          
-  # READ
-  get("/movies", { :controller => "movies", :action => "index" })
-  
-  get("/movies/:path_id", { :controller => "movies", :action => "show" })
-  
-  # UPDATE
-  
-  post("/modify_movie/:path_id", { :controller => "movies", :action => "update" })
-  
-  # DELETE
-  get("/delete_movie/:path_id", { :controller => "movies", :action => "destroy" })
+An error we haven't encountered before:
 
-  #------------------------------
-
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
-end
 ```
-{: mark_lines=""}
-
-And we check this out in our live app preview by visiting one of the URLs, like **/movies**.
-
-But wait! Another error! RTEM: `Mirgrations are pending... run rails db:migrate...`
-
-Of course! I forgot to migrate the new `movies` table to my database. As of Rails 6, there's actually a button on the error message that you can click to run that migration. Or you can always go back to the terminal on Gitpod and run:
-
-```bash
-rails db:migrate
+ActionController::InvalidAuthenticityToken at /insert_movie
+Can't verify CSRF token authenticity.
 ```
 
-Now, back on **/movies**, we see the `index` action page, where there is a form to add things to the table in our database.
-
-Try to add one. What happens? An error we haven't encountered before: `ActionController::InvalideAuthenticityToken`.
-
-## Reviewing RCAV 00:57:30 to 01:00:00
-
-Before we solve this new error, let's shake off some rust. What's even happening on the **/movies** page in this form?
-
-The generator wrote these routes for us, and we're trying to visit one of them: 
-
-```ruby
-# config/routes.rb
-
-Rails.application.routes.draw do
-  # Routes for the Movie resource:
-
-  # CREATE
-  post("/insert_movie", { :controller => "movies", :action => "create" })
-          
-  # READ
-  get("/movies", { :controller => "movies", :action => "index" })
-  
-  ...
-
-end
-```
-{: mark_lines="10"}
-
-Our app is running on the live server, so when we try to visit the **/movies** path, the `get("/movies"...)` method says: let me go to the `MoviesController` and find the method (a.k.a., `:action`) called `index`:
-
-```ruby
-# app/controllers/movies_controller.rb
-
-class MoviesController < ApplicationController
-  def index
-    matching_movies = Movie.all
-
-    @list_of_movies = matching_movies.order({ :created_at => :desc })
-
-    render({ :template => "movies/index.html.erb" })
-  end
-
-  ...
-
-end
-```
-{: mark_lines="4-10"}
-
-Rails then runs that `index` method. Remember, all of these files were generated for us by our `draft:resources` command.
-
-`Movie` is the model (find it in `app/models/movie.rb`) that we use to interact with our `movies` table. That's why we can call the `.all` instance method on `Movies` in the first line of the `index` action. Then we `.order` the movies by their `created_at` field, and render the instance variable `@list_of_movies` with a `.each` loop in our view:
-
-```erb
-<!-- app/views/movies/index.html.erb -->
-
-<div>
-  <div>
-    <h1>
-      List of all movies
-    </h1>
-  </div>
+<div class="bg-red-100 py-1 px-5" markdown="1">
+Note, in the walkthrough video, I get an error message in the browser. You won't see this error due to some Rails 7 updates. But nevertheless follow along with the next section to add the authenticity token to your POST request!
 </div>
 
-...
+## HTTP POST authenticity
 
-      <% @list_of_movies.each do |a_movie| %>
-      <tr>
-        <td>
-          <%= a_movie.id %>
-        </td>
+Let's have a look at that form in the `app/views/movies/index.html.erb` view template:
 
-...
-
-```
-{: mark_lines="13"}
-
-Remember, this is an embedded Ruby `.html.erb` file, so we can use the tags `<% %>` for hidden Ruby and `<%= %>` to render things on the page.
-
-Our `movies` table is empty right now, so there is nothing rendered on the **/movies** page (we are `.each` looping on an empty array). But, once we add some movies, that will create a table row per movie in the form on our view page, and that's not working right now.
-
-## HTTP POST Authenticity 01:00:00 to 01:12:30
-
-Now that we've reviewed some RCAV, let's have a look at that form on top of the **/movies** view template:
-
-```erb
+```erb{3}
 <!-- app/views/movies/index.html.erb -->
 
-...
-
     <form action="/insert_movie" method="post">
-
-        ...
+    
+    <!-- ... -->
 
     </form>
-
-...
-
 ```
-{: mark_lines="5"}
 
-The `action` for this form is visiting the **/insert_movie** URL, which we can find in our routes:
+Here and in the `config/routes.rb` file, we are using a POST request, since we are modifying the database with this `create` action.
 
-```ruby
-# config/routes.rb
-
-Rails.application.routes.draw do
-  # Routes for the Movie resource:
-
-  # CREATE
-  post("/insert_movie", { :controller => "movies", :action => "create" })
-...
-```
-{: mark_lines="7"}
-
-It's using a `method` of `post`, which is the key part here. This is something we learned towards the end of AD1. 
-
-There's a few different HTTP verbs. In AD1, we started out by using GET for everything. Then we evolved to using POST when we were adding or updating records, or deleting records sometimes. If we wanted to do something like a file upload, or if we have some sensitive information like passwords, we don't want to use GET, because it'll put the password right in the query string and the URL. Meaning it'll be visible to anyone!
-
-On the other hand, POST puts all of the inputs into a different part of the request so that they're not visible. You can have file uploads, passwords, anything you want, and you can have arbitrary length. 
-
-In AD1, we were actually not using POST entirely correctly. We left a security hole! Happily, Rails and tens of thousands of companies that use Rails, have encountered these security holes and performance issues and built solutions for them. It requires a little bit of extra work to use these solutions built into Rails. In AD1, we actually disabled them all to make it simpler to get something up and running. But now, in AD2, we've re-enabled all of those default protections. 
+However, up to this point, we have not been using POST entirely correctly. We left a security hole! Happily, Rails and tens of thousands of companies that use Rails, have encountered these security holes and performance issues and built solutions for them. It requires a little bit of extra work to use these solutions built into Rails. Previously, we disabled them all to make it simpler to get something up and running. But now we've re-enabled all of those default protections. 
 
 **Here's what's going on here:** When I submitted the form, it did a POST to `"/insert_movie"`. Now that we are using POST for our update and create actions to _modify our database_, Rails is going to expect that POST to come along with a password. That guarantees that the form was created by us and not by a malicious third party.
 
 If we just blindly accepted that HTTP request, somebody could put this form on their own website, but have it point to _our_ website (e.g., by replacing the `<form>` `action` attribute with: `action="https://our-app-domain.com/insert_moview`). Then they would be able to modify our database!
 
-That's called **cross-site request forgery**. It was a really common attack that happened a lot in the early 2000s until frameworks like Rails started building in protections against it.
+That's called **cross-site request forgery**. 
 
 What's the solution? In the form, we're going to put a hidden input that has a "password", and Rails is going to randomly generate a password every time we draw this form:
 
-```erb
+```erb{4}
 <!-- app/views/movies/index.html.erb -->
 
-...
-
     <form action="/insert_movie" method="post">
-        <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
-        ...
+      <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+    
+    <!-- ... -->
 
     </form>
-
-...
-
 ```
-{: mark_lines="6"}
 
-Let's break down what we did. We added a new form `<input>` with some attributes. First, we set the `type="hidden"`, so the input is not displayed to the user. Then we gave the input a `name="authenticity_token`. Finally, we fill it in with a `value`, which is a rendered Ruby method `<%= form_authenticity_token %>`.
+We added a new form `<input>` with some attributes. First, we set the `type="hidden"`, so the input is not displayed to the user. Then we gave the input a `name="authenticity_token"`. Finally, we filled it in with a `value`, which is a rendered Ruby method `<%= form_authenticity_token %>`.
 
-The method `form_authenticity_token` is known as a **helper method** and it comes with Rails out of the box. This is the method that uses cryptography to generate and return a long string token that acts as our "password" for Rails to check and make sure the request is from _us_ and not an outside source. The string is scrambled going into and out of Rails, so even if someone did an "Inspect" on the browser view of our page, the token would not be useful for getting into our database.
+The method `form_authenticity_token` is known as a **helper method** and it comes with Rails out of the box. This method uses cryptography to generate and return a long string token that acts as our "password" for Rails to check and make sure the request is from _us_ and not an outside source. The string is scrambled going into and out of Rails, so even if someone did an "Inspect" on the browser view of our page, the token would not be useful for getting into our database. (`authenticity_token` is the name in the `params` hash that Rails will automatically look for to extract the token, so we had no choice but to name it so.)
 
-We need this token in our `params` hash, so we gave it a name. `authenticity_token` is the name in the `params` that Rails will automatically look for to extract the token, so we had no choice but to name it so.
-
-With this one-line addition to the form code, try and re-submit a new movie on the **/movies** page.
+With this one-line addition to the form code, try and re-submit a new movie on the `/movies` page. 
 
 Boom. Error message begone. All of a sudden we have **CSRF** protection. One of the many things that we would never have thought of building until we got hacked. Rails just has this out of the box so that you can't even _build_ forms without solving this problem first!
 
 Again, we did this all with the **helper method** `form_authenticity_token` that comes with Rails. We actually already saw some other Rails helper methods, for instance, remember `time_ago_in_words`? There's a whole bunch of these helper methods that we need to learn to level up our codebase.
 
-## RESTful Routes 01:12:30 to 01:20:00
+## RESTful routes
 
-Here's another improvement that I want to make to our code. Look at our routes:
+Look at our routes:
 
 ```ruby
 # config/routes.rb
 
-...
+# ...
   # CREATE
   post("/insert_movie", { :controller => "movies", :action => "create" })
           
@@ -350,13 +171,12 @@ Here's another improvement that I want to make to our code. Look at our routes:
   
   # DELETE
   get("/delete_movie/:path_id", { :controller => "movies", :action => "destroy" })
-...
+# ...
 ```
-{: mark_lines="5-15"}
 
-During AD1, we started with **/movies** for the `index` page, and for the details of an individual movie (`show`), we did **/movies/ID**, with the dynamic route segment `"/movies/:path_id"`. We expected the ID number to appear and then we showed the details of one thing. Then we added **/insert_movie** as a way to trigger an action that `create`s it when we started.
+We started with `/movies` for the `index` page, and for the details of an individual movie (`show`), we did `/movies/ID`, with the dynamic route segment `"/movies/:path_id"`. Then we added `"/insert_movie"` as a way to trigger an action that `create`s it.
 
-All of these were originally GET methods (`get` in Ruby on Rails), and we only later evolved the `create` path to a POST (`post` in Ruby on Rails). We named these paths in a way that made it really obvious to us what the intention was. We specifically _chose_ names that revealed our intentions for what action was supposed to trigger on these URL paths.
+All of these were originally HTTP GET requests (`get` in Ruby on Rails), and we only later evolved the `create` path to an HTTP POST request (`post` in Ruby on Rails). We named these paths in a way that made it really obvious to us what the intention was. We specifically _chose_ names that revealed our intentions for what action was supposed to trigger on these URL paths.
 
 In the real world, professional developers don't do this! 
 
@@ -368,11 +188,9 @@ The way we name our URLs shouldn't have to include what we're trying to do with 
 get("/movies", { :controller => "movies", :action => "index" })
 ```
 
-is good, because our path doesn't say `read movie`, or something like that, it just says `movie`, which is the resource (a.k.a. table in our database) we want to read from. `get` tells us our intention. 
+is good, because our path doesn't say `read_movie`, or something like that, it just says `movie`, which is the resource (the table in our database) we want to read from. `get` tells us our intention. 
 
-This is a topic that you may have heard of. You might have come across this acronym called REST or REST API or [RESTful API](https://restfulapi.net/resource-naming/).
-
-That term is kind of squishy these days. What it means is: If your routes are RESTful, then they're adhering to the naming convention that most other web developers use. 
+This is a topic called REST or REST API or [RESTful API](https://restfulapi.net/resource-naming/): if your routes are RESTful, then they're adhering to the naming convention that most other web developers use. 
 
 That means, *we don't use which CRUD function is being performed in the URL itself, rather the request method should be used to indicate which CRUD function is happening.*
 
@@ -392,7 +210,7 @@ But, we need to change the `# CREATE` route, so it doesn't say `"/insert_movie"`
 post("/movies", { :controller => "movies", :action => "create" })
 ```
 
-Now, even though our movie index page with the `index` action and our insert movie page with the `create` action share the same URL path (**/movies**), Rails won't get confused, because they are using different HTTP verbs to specify what type of request is being made (GET / `get` vs. POST / `post`).
+Now, even though our movie index page with the `index` action and our insert movie page with the `create` action share the same URL path (`/movies`), Rails won't get confused, because they are using different HTTP verbs to specify what type of request is being made (GET / `get` vs. POST / `post`).
 
 We also need to change the `# UPDATE` route: 
 
@@ -401,11 +219,11 @@ We also need to change the `# UPDATE` route:
 patch("/movies/:path_id", { :controller => "movies", :action => "update" })
 ```
 
-We changed the route name to start with our resource of interest (`"/movies/"`), and we changed the **HTTP verb** to a new method `patch` (a.k.a. PATCH).
+We changed the route name to start with our resource of interest (`"/movies"`), and we changed the **HTTP verb** to a new method `patch` (for an HTTP PATCH request).
 
-And again, even though our movie details page with the `show` action and our update movie page with the `update` action share the same URL path the difference in HTTP verbs will prevent any confusion (GET / `get` vs. PATCH / `patch`)
+And again, even though our movie details page with the `show` action and our update movie page with the `update` action share the same URL path the difference in HTTP verbs will prevent any confusion (GET / `get` vs. PATCH / `patch`).
 
-Similarly, to delete a movie, we're going to use the HTTP verb DELETE (a.k.a. `delete`):
+Similarly, to delete a movie, we're going to use the HTTP verb DELETE (`delete`):
 
 ```ruby
 # DELETE
@@ -414,7 +232,7 @@ delete("/movies/:path_id", { :controller => "movies", :action => "destroy" })
 
 Despite all the similar URL paths in our routes (`"/movies/ID"`), none of them will get mixed up because they have different verbs!
 
-We do need to update the URLs now anywhere else they appear in our app. For instance, in the `index` page form, we need to change this:
+We do need to update the URLs now anywhere else they appear in our app. For instance, in the `app/views/movies/index.html.erb` page form, we need to change this:
 
 ```erb
 <form action="/insert_movie" method="post">
@@ -428,19 +246,19 @@ to this:
 
 And we don't need to worry about confusion, because Rails will look for the route with the matching `method` (here, that's POST, or `post`).
 
-But what if we manually type in **/movies** to the address bar? Which operation will be performed. Well, the browser can _only_ perform GET requests! So that method will be used and the index of movies will be shown.
+But what if we manually type in `/movies` to the address bar? Which operation will be performed. Well, the browser can _only_ perform GET requests! So that method will be used and the index of movies will be shown.
 
-## No .at for ActiveRecord 01:20:00 to 01:22:30
+## No `.at` for ActiveRecord
 
-One quick thing we need to fix. On the **/movies** index page, try to click on the "Show details" link for the movie you added.
+On the `/movies` index page, try to click on the "Show details" link for the movie you added.
 
 We get an error message `undefined method 'at' for #<ActiveRecord:Relation...`, pointing to this line in our `MoviesController`:
 
-```ruby
+```ruby{10}
 # app/controllers/movies_controller.rb
 
 class MoviesController < ApplicationController
-  ...
+  # ...
   def show
     the_id = params.fetch("path_id")
     
@@ -450,11 +268,10 @@ class MoviesController < ApplicationController
     
     render({ :template => "movies/show.html.erb" })
   end
-  ...
+  # ...
 ```
-{: mark_lines="10"}
 
-Back in AD1, I told you all to just think of an `ActiveRecord:Relation` (here the `matching_movies` from our `movies` table, which were accessed a `.where` query on the `Movie` model) like an array, and to use the familiar array methods (like `.at`). But, it's not actually an array! Sorry! In the real world, `.at` is not defined for `ActiveRecord:Relation`, we just added it to make it more familiar for us beginners. From now on, when you have an `ActiveRecord:Relation`, and you're trying to get a single element out of it, you could do square bracket syntax:
+Previously, I told you all to just think of an `ActiveRecord:Relation` like an array, and to use the familiar array methods (like `.at`). But, it's not actually an array! Sorry! In the real world, `.at` is not defined for `ActiveRecord:Relation`, we just added it to make it more familiar for us beginners. From now on, when you have an `ActiveRecord:Relation`, and you're trying to get a single element out of it, you could do square bracket syntax:
 
 ```ruby
 @the_movie = matching_movies[0]
@@ -470,9 +287,9 @@ These methods are shared between arrays and `ActiveRecord:Relation`s. Square bra
 
 Try the "Show details" link again after you make this change. Working? Great! Be sure to make this change everywhere else you find a `.at(0)` in your controller.
 
-## DELETE 01:22:30 to 01:25:00
+## DELETE request
 
-Now, on the details page for a movie is working, try to click "Delete movie". What's the error telling us?
+Now, on the details page for a movie, try to click "Delete movie". What's the error telling us?
 
 ```
 No route matches [GET] "/delete_movie/1"
@@ -480,46 +297,33 @@ No route matches [GET] "/delete_movie/1"
 
 Right, we changed that route to be RESTful using the `delete` method, so in our `show.html.erb` view template, we need to change the link:
 
-```erb
+```erb{3}
 <!-- app/views/movies/show.html.erb -->
 
-<div>
-  <div>
-    <h1>
-      Movie #<%= @the_movie.id %> details
-    </h1>
-
-    <div>
-      <div>
-        <a href="/movies">
-          Go back
-        </a>
-      </div>
-
-      <div>
         <a href="/delete_movie/<%= @the_movie.id %>">
           Delete movie
         </a>
-      </div>
-    </div>
 ```
-{: mark_lines="17"}
 
 to this:
 
 ```erb
-    <a href="/movies/<%= @the_movie.id %>">    
+<a href="/movies/<%= @the_movie.id %>"> 
 ```
 
 Make that change and try to "Delete movie" again. Nothing happens. Because this is _still a GET request_. And if you do `get("/movies/:id"...)`, our routes indicate that this should call the `show` action. So now we have a conflict between the two. How do we fix it?
 
 We need to make this `<a>` link tag submit a DELETE request instead of a GET request. Sadly, we can't just add an attribute to the `<a>` tag `method="delete"`. HTML only has POST and GET, because the people who wrote HTML are different than the committee who wrote HTTP, and they apparently didn't share the memo.
 
-Fortunately though, Rails includes some fanciness that will let us fake this pretty easily. Change the link to:
+Fortunately though, Rails includes some fanciness that will let us fake this pretty easily. Add this attribute:
 
-```erb
-    <a href="/movies/<%= @the_movie.id %>" data-method="delete">    
+```erb{1:(40-66)}
+<a href="/movies/<%= @the_movie.id %>" data-turbo-method="delete"> 
 ```
+
+<div class="bg-red-100 py-1 px-5" markdown="1">
+Note, in the walkthrough video I used `data-method`, but in our Rails 7 update, this attribute is renamed `data-turbo-method`.
+</div>
 
 Now go back and try the "Delete movie" link once more. It worked! (Unless you forgot to change `.at(0)` to `[0]` in the controller.)
 
@@ -532,65 +336,40 @@ Now let's fix the "Edit movie" form that we use to update a database entry. This
 ```erb
 <!-- app/views/movies/show.html.erb -->
 
-<div>
-  <div>
-    <h1>
-      Movie #<%= @the_movie.id %> details
-    </h1>
-
-    ...
-
     <form action="/modify_movie/<%= @the_movie.id %>"  method="post" >
-      <div>
-        <label for="title_box">
-          Title
-        </label>
-
-        <input type="text" id="title_box" name="query_title" value="<%= @the_movie.title %>">
-      </div>
-    ...
 ```
-{: mark_lines="11-18"}
 
 Right away, we know we can switch the `action` to point to the correct URL:
 
-```erb
-    ...
+```erb{1:20-26}
     <form action="/movies/<%= @the_movie.id %>"  method="post" >
-    ...
 ```
 
 And now we're going to have the same conflict issue that we did with the delete method. We wish we could just change the `method` to `"patch"`, but that's not an option in plain HTML. We also can't just use `data-method="patch"`, similar to how we did it with the delete link.
 
 Well, let's start by adding the authenticity token to our `post` request so it would actually work:
 
-```erb
-    ...
+```erb{2}
     <form action="/movies/<%= @the_movie.id %>"  method="post" >
         <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
-    ...
 ```
-{: mark_lines="3"}
 
 Now we need to add the following:
 
-```erb
-    ...
+```erb{4}
     <form action="/movies/<%= @the_movie.id %>"  method="post" >
         <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
 
         <input type="hidden" name="_method" value="patch">
-    ...
 ```
-{: mark_lines="5"}
 
 Another hack! Once again, this bit of code is just some Rails fanciness to trick the HTTP server into making a PATCH rather than a POST request. We _have_ to name the new hidden input `"_method"` because Rails will be looking for that key in the `params` hash, and if it sees that key, then it will know to work its magic based on the value (here, `"patch"`).
 
-There's no need to memorize this oddity, because soon we'll use some advanced helper methods to generate all of this automatically.
+<div class="bg-red-100 py-1 px-5" markdown="1">
+**There's no need to memorize all of these oddities**, because soon we'll use some advanced helper methods to generate all of this automatically.
+</div>
 
-Now we have working, RESTful routes for create, read (index and show), update, and delete. CRUD.
-
-## Dynamic Segment Naming 01:34:30 to 01:38:00
+## Dynamic path naming
 
 Let's make another quick change. 
 
@@ -783,7 +562,7 @@ One last thing to note, then we'll go back to working on our `movies` resource.
 
 On the `scaffold` **/books** `index` or `show` pages, there's no form to add a book or edit a book. Instead, there's a link that brings you to that form. 
 
-Let's move the **/movies** `index` form to add a new movie onto it's own page now.
+Let's move the `/movies` `index` form to add a new movie onto it's own page now.
 
 Starting with `config/routes.rb`, add the new route we want:
 
@@ -1030,7 +809,7 @@ In AD1, we instantianted a `.new` record, take columns from the form with the qu
 
 If it _is_ valid, we `.save` and redirect. If it is _not_ valid, we just redirect. The only difference with the redirection is that we have different `:notice` and `:alert` messages. 
 
-But we aren't doing anything with that `:alert` message yet, so we don't get any notification on our `Movie` model that something went wrong if a validation doesn't pass. And we're just redirecting back to **/movies** rather than staying on the form. Use the **/movies/new** form to add a movie with and without a title and see how it works.
+But we aren't doing anything with that `:alert` message yet, so we don't get any notification on our `Movie` model that something went wrong if a validation doesn't pass. And we're just redirecting back to `/movies` rather than staying on the form. Use the **/movies/new** form to add a movie with and without a title and see how it works.
 
 Now might be a good time to add a link to the new movie form on the index page:
 
