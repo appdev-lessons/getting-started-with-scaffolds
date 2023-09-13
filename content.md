@@ -26,7 +26,7 @@ There is no target for this app, this is just a playground to repeat and levelup
 
 This project does include a few basic automated tests, so click on this button to get started:
 
-LTI{Load Getting Started with Scaffolds assignment}(https://grades.firstdraft.com/launch)[S9ymPy6WCsn18gLbByVbZQ7k]{vfdtzJb5bLYqYwuqgeRKpc5d}(5)[Getting Started with Scaffolds Project]
+LTI{Load Getting Started with Scaffolds assignment}(https://grades.firstdraft.com/launch)[S9ymPy6WCsn18gLbByVbZQ7k]{vfdtzJb5bLYqYwuqgeRKpc5d}(10)[Getting Started with Scaffolds Project]
 
 Launch your live app preview with `bin/dev`, and you will be greeted by a brand new, blank Rails app. Let's get started filling it in.
 
