@@ -22,9 +22,9 @@ The lesson below contains some additional details, but the video should mostly g
 
 ## Getting started
 
-There is no target for this app, but the goal is to rebuild Must See Movies using industry standard (i.e. Professional) code.
+There is no target for this app, this is just a playground to repeat and levelup what we've learned so far using industry standard (i.e. Professional) code.
 
-This project includes a few basic automated tests, so click on this button to get started:
+This project does include a few basic automated tests, so click on this button to get started:
 
 LTI{Load Getting Started with Scaffolds assignment}(https://grades.firstdraft.com/launch)[S9ymPy6WCsn18gLbByVbZQ7k]{vfdtzJb5bLYqYwuqgeRKpc5d}(5)[Getting Started with Scaffolds Project]
 
@@ -64,7 +64,7 @@ bundle install
 
 (Or just `bundle` for short.) 
 
-This command will go get all the gems from our `Gemfile` and install them. 
+This command will go get all of the gems from our `Gemfile` and install them. 
 
 Now try the bash prompt command again:
 
@@ -230,7 +230,7 @@ Similarly, to delete a movie, we're going to use the HTTP verb DELETE (`delete`)
 delete("/movies/:path_id", { :controller => "movies", :action => "destroy" })
 ```
 
-Despite all the similar URL paths in our routes (`"/movies/ID"`), none of them will get mixed up because they have different verbs!
+Despite all of the similar URL paths in our routes (`"/movies/ID"`), none of them will get mixed up because they have different verbs!
 
 We do need to update the URLs now anywhere else they appear in our app. For instance, in the `app/views/movies/index.html.erb` page form, we need to change this:
 
@@ -329,7 +329,7 @@ Now go back and try the "Delete movie" link once more. It worked! (Unless you fo
 
 With Rails, we can just add this attribute onto a link, and Rails will add some stuff in the background that makes it appear like a DELETE request to our server.
 
-## PATCH 01:25:00 to 01:34:30
+## PATCH request
 
 Now let's fix the "Edit movie" form that we use to update a database entry. This form is at the bottom of the `show` page:
 
@@ -371,13 +371,11 @@ Another hack! Once again, this bit of code is just some Rails fanciness to trick
 
 ## Dynamic path naming
 
-Let's make another quick change. 
+In our `config/routes.rb` file, we were always using `:path_id` for the dynamic route segment indicating a movie's ID column. We made this name up to make it clear to us that this is a parameter that is going to appear in the address bar, e.g., at `/movies/1`. Then, we know in the `params` hash when we see `path_id`, it is coming from the URL path as opposed to a query string. 
 
-In our `config/routes.rb` file, we were always using `:path_id` for the dynamic route segment indicating a movie's ID column. We made this name up to make it clear to us that this is a parameter that is going to appear in the address bar, e.g., at **/movies/1**. Then, we know in the `params` hash when we see `path_id`, it is coming from the URL path as opposed to something that's coming to us from a query string. 
+In the real world, developers just call it `:id`, so all of our routes `"/movies/:path_id"` should be changed to `"/movies/:id"`.
 
-Now in the real world, the developers just call it `:id`, so all of our routes `"/movies/:path_id"` should be changed to `"/movies/:id"`. We could of course call it `:zebra_id`, or whatever else, as long as we know what it is, then in the controller we use that key to fetch it from the `params`. It's up to us. But, in real Rails code, you will just see `:id`.
-
-If you switch the dynamic path segments in the `config/routes.rb` like from this:
+If you switch the dynamic path segments in the `config/routes.rb` from this:
 
 ```ruby
 get("/movies/:path_id", { :controller => "movies", :action => "show" })
@@ -389,53 +387,42 @@ to this:
 get("/movies/:id", { :controller => "movies", :action => "show" })
 ```
 
-Then we need to remember to change the `params` key in the `app/controllers/movies_controller.rb` file for that action (in the example, `show`). From this:
+Then you need to remember to change the `params` key in the `app/controllers/movies_controller.rb` file for that action (in the example, `show`). From this:
 
 ```ruby
-...
-  def show
     the_id = params.fetch("path_id")
-...
 ```
 
 to this:
 
-```ruby
-...
-  def show
+```ruby{1:(27-31)}
     the_id = params.fetch("id")
-...
 ```
-{: mark_lines="3"}
 
 And we need to make this change everywhere (`path_id` to `id`) in our codebase. 
 
-You can try selecting the offending characters and [creating multiple cursors](https://code.visualstudio.com/docs/editor/codebasics#_multiple-selections-multicursor) to change them. Or you can try a [global find and replace](https://learn.microsoft.com/en-us/visualstudio/ide/finding-and-replacing-text?view=vs-2022#find-and-replace-control). But if you do any major find-and-replace operations, be sure to `git commit` before so can rewind if you mess things up.
+You can try selecting the offending characters and [creating multiple cursors](https://code.visualstudio.com/docs/editor/codebasics#_multiple-selections-multicursor) to change them. Or you can try a [global find and replace](https://learn.microsoft.com/en-us/visualstudio/ide/finding-and-replacing-text?view=vs-2022#find-and-replace-control). But if you do any major find-and-replace operations, be sure to `git commit` before so you can rewind if you mess things up.
 
 With that, our routes are done. They are industrial grade. The next thing to do is build separate pages for create and update actions instead of having them on the show and index pages.
 
-## The Goal: Scaffolds 01:55:00 to 02:08:00
+## The Goal: Scaffolds
 
-Why are we doing all this seemingly arbitrary work? Switching naming conventions and making our routes RESTful? Well, let's look at the command we're going to start using rather than `draft:resource`:
+Why are we doing all of this seemingly arbitrary work? Switching naming conventions and making our routes RESTful? 
 
-```bash
+Let's look at the command we're going to start using rather than `draft:resource`:
+
+```
 rails generate scaffold book title:string description:text released:boolean
 ```
 
-It's just another Rail's generator. There's a name for a model (`book`) and columns (`title`, etc.). But the difference is the name of the generator we choose: `scaffold`. 
-
-This, like the model generator and the controller generator, are just built into Rails.
+It's just another Rails generator. There's a name for a model (`book`) and columns (`title`, etc.). But the difference is the name of the generator we choose: `scaffold`. 
 
 When we run this generator, look what happens:
 
-```bash
-    Running via Spring preloader in process 4313
+```
       invoke  active_record
-      create    db/migrate/20230311022329_create_books.rb
+      create    db/migrate/20230913023116_create_books.rb
       create    app/models/book.rb
-      invoke    test_unit
-      create      test/models/book_test.rb
-      create      test/fixtures/books.yml
       invoke  resource_route
        route    resources :books
       invoke  scaffold_controller
@@ -447,29 +434,19 @@ When we run this generator, look what happens:
       create      app/views/books/show.html.erb
       create      app/views/books/new.html.erb
       create      app/views/books/_form.html.erb
+      create      app/views/books/_book.html.erb
       invoke    resource_route
-      invoke    test_unit
-      create      test/controllers/books_controller_test.rb
-      create      test/system/books_test.rb
-      invoke    helper
-      create      app/helpers/books_helper.rb
-      invoke      test_unit
       invoke    jbuilder
       create      app/views/books/index.json.jbuilder
       create      app/views/books/show.json.jbuilder
       create      app/views/books/_book.json.jbuilder
-      invoke  assets
-      invoke    scss
-      create      app/assets/stylesheets/books.scss
-      invoke  scss
-      create    app/assets/stylesheets/scaffolds.scss
 ```
 
-Woah! Unlike the `draft:resource` generator, I didn't have to add a gem to get this to run. It's just built in to Rails. And look at all the stuff it does!
+Woah! Unlike the `draft:resource` generator, I didn't have to add a gem to get this to run. It's just built in to Rails. And look at all of the stuff it does!
 
-As before, `rails db:migrate`, visit **/books**, click around, and examine the code that was generated (`config/routes.rb`, `app/controllers/books_controller.rb`, etc).
+As before, `rake db:migrate`, visit `/books` in your live app preview, click around, and examine the code that was generated (`config/routes.rb`, `app/controllers/books_controller.rb`, etc).
 
-Phew! There's a lot of mysterious new stuff. We're going to demystify it all over the next few weeks, step by step.
+Phew! There's a lot of mysterious new stuff. We're going to demystify it all over the next few weeks, step-by-step.
 
 One thing to note, where are our routes? It looks like only _one line_ got added to the `config/routes.rb` file:
 
@@ -477,17 +454,13 @@ One thing to note, where are our routes? It looks like only _one line_ got added
   resources :books
 ```
 
-But **/books** showed us the standard CRUD interface. (Albeit with somewhat nicer styling than we've been building... hmm perhaps some CSS happening behind the scenes?). And we can check the other routes by navigating to **/rails/info** in our live app.
+But `/books` showed us the standard CRUD interface. And we can check the other routes by navigating to `/rails/info` in our live app preview.
 
-**/rails/info** is a path you can always visit in development mode to list all the routes that exist, and you can even search them here and filter them.
+All of the book routes exist! 
 
-![](/assets/rails-slash-info.png)
+With `scaffold`, if you give it the name of the database table that you want to build a frontend interface around, it writes all of the routes and it writes them RESTfully.
 
-All the book routes exist! 
-
-With `scaffold`, if you give it the name of the database table that you want to build a front interface around, it writes all the routes and it writes them RESTfully.
-
-Imagine if that's how you were introduced to Rails on day one? Pretty confusing for a newcomer, but we've been building up to this and we're almost there!
+Imagine if that's how you were introduced to Rails on day one? Pretty confusing for a newcomer; but we've been building up to this and we're almost there!
 
 Let's also take a quick look at some of the controller actions:
 
@@ -514,24 +487,24 @@ class BooksController < ApplicationController
   # GET /books/1/edit
   def edit
   end
-  ...
+# ...
 ```
 
-Where's all the code? Well, once we adopt the conventional names for our actions, our view templates, our variables, and everything else, all that boiler plate code can be removed. Rails will figure out what we mean, because of the _conventional naming_.
+Where's all of the code? Well, once we adopt the conventional names for our actions, our view templates, our variables, and everything else, all of that boiler plate code can be removed. Rails will figure out what we mean, because of the _conventional naming_.
 
-For example, the `show` template is just called `show.html.erb`, so we don't need to have the line `render({ :template => "books/show.html.erb" })`. We're already in the `BooksController` and the template is named after the action, pretty easy for Rails to figure out, yeah?
+For example, the `show` template is just called `show.html.erb`, so we don't need to have the line `render({ :template => "books/show" })`. We're already in the `BooksController` and the template is named after the action, pretty easy for Rails to figure out, yeah?
 
 <aside markdown="1">
-You don't _have to_ use conventional names, but if you stray from convention then you would need to add some lines fo code. Like, for the `show` action, if you named your view template `details_page.html.erb`, then you would need to point that out to Rails by adding `render({ :template => "books/details_page" })`. (Note, you _can_ drop the `.html.erb`!)
+You don't _have to_ use conventional names, but if you stray from convention then you would need to add some lines fo code. Like, for the `show` action, if you named your view template `details_page.html.erb`, then you would need to point that out to Rails by adding `render({ :template => "books/details_page" })`.
 </aside>
 
 Here's an example of where `scaffold` added code that we haven't seen: 
 
-```ruby
+```ruby{11-12}
 # app/controller/books_controller.rb
 
 class BooksController < ApplicationController
-  ...
+  # ...
   # POST /books or /books.json
   def create
     @book = Book.new(book_params)
@@ -548,25 +521,20 @@ class BooksController < ApplicationController
   end
   ...
 ```
-{: mark_lines="11-12" }
 
-The generator includes responses for multiple formats besides HTML (e.g., above for JSON). 
+The generator includes responses for multiple formats besides HTML (e.g., above for JSON)!
 
-Let's suppose we're ready to add a format to our app. We want to build iPhone or Android apps. As a first step, we have to split the frontend and the backend, and we have to have a JSON API for our app to consume. Well, Rails has taken care of this! Try visiting the route **/books.json** (the browser conventionally adds an **.html**, like **/books.html**, but we can override that).
+It might seem like what we're doing is arbitrary. We're changing the names of routes that were already working and we're actually making the names less understandable. But, the benefit is that eventually we'll get to use all of these shortcuts to avoid typos and bugs by typing less code. 
 
-All of this is the point. It might seem like what we're doing is arbitrary. We're changing the names of routes that were already working and we're actually making the names less understandable. But, the benefit is that eventually we'll get to use all of these shortcuts to avoid typos and bugs by typing less code. 
+## Reusing forms
 
-One last thing to note, then we'll go back to working on our `movies` resource. 
+On the `index` or `show` pages for `/books`, there's no form to add a book or edit a book. Instead, there's a link that brings you to that form. 
 
-## Movie Form Pages 02:08:00 to 02:24:30
-
-On the `scaffold` **/books** `index` or `show` pages, there's no form to add a book or edit a book. Instead, there's a link that brings you to that form. 
-
-Let's move the `/movies` `index` form to add a new movie onto it's own page now.
+Let's move the `/movies` form on the `index` page to its own page as well.
 
 Starting with `config/routes.rb`, add the new route we want:
 
-```ruby
+```ruby{7}
 # config/routes.rb
 
 Rails.application.routes.draw do
@@ -578,48 +546,26 @@ Rails.application.routes.draw do
 
   # CREATE
   post("/movies", { :controller => "movies", :action => "create" })     
-  ...
+  # ...
 ```
-{: mark_lines="7" }
 
 <aside markdown="1">
-Be sure your new `get("/movies/new"...)` route is _above_ the `get("/movies/:id"...)` route that is already in `config/routes.rb`. If it was _below_ this route, then there would be a conflict and anytime we tried to visit **/movies/new** Rails would treat **new** in the path as an `:id`, which wouldn't work.
+Be sure your new `get("/movies/new"...)` route is _above_ the `get("/movies/:id"...)` route that is already in `config/routes.rb`. If it was _below_ this route, then there would be a conflict and anytime we tried to visit `/movies/new` Rails would treat **new** in the path as an `:id`, which wouldn't work.
 </aside>
 
 Now we need to add the (conventionally named) `new` action to our controller:
 
-```ruby
-# app/controllers/movies_controller.rb
-
-class MoviesController < ApplicationController
-  def new
-    render({ :template => "movies/new.html.erb" })
-  end
-  ...
-```
-
-Looks good so far. But, I think it's time to stop typing out the longest version of everything. We can significantly shorten our render statement using some of the more professional Ruby syntax:
-
-```ruby
+```ruby{4-6}
 # app/controllers/movies_controller.rb
 
 class MoviesController < ApplicationController
   def new
     render template: "movies/new"
   end
-  ...
+  # ...
 ```
-{: mark_lines="5" }
 
-We: 
- - dropped the optional parantheses after the `render` method, 
- - dropped the curly braces from the hash since it's the last argument to the method, 
- - dropped the `.html.erb` since Rails looks for that file ending by default
- - and put the `:` after the `template` symbol in order to drop the `=>` hash rocket.
-
-This is the convention you will see all over the internet, and it's the one we will adopt from now on.
-
-To continue with our RCAV, let's go to the live app and navigate to **/movies/new**. A `Missing template...` error! Let's create that, and cut the POST form out of the `index.html.erb` page and paste it into the `new.html.erb` page:
+To continue with our RCAV, let's go to the live app and navigate to `/movies/new`. A `Missing template...` error! Let's create that as `app/views/movies/new.html.erb`, and cut the POST form out of the `index.html.erb` page and paste it into the `new.html.erb` page:
 
 ```erb
 <!-- app/views/movies/new.html.erb -->
@@ -631,7 +577,7 @@ To continue with our RCAV, let's go to the live app and navigate to **/movies/ne
 <form action="/movies" method="post">
   <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
 
-  ...
+  <!-- ... -->
 
   <button>
     Create movie
@@ -639,88 +585,21 @@ To continue with our RCAV, let's go to the live app and navigate to **/movies/ne
 </form>
 ```
 
-(Hint: You can autoformat your code to fix indentation issues in the editor, [see here](https://code.visualstudio.com/docs/editor/codebasics#formatting).)
-
-Refresh **/movies/new** and test the form. Working? Great!
+Refresh `/movies/new` and test the form. Working? Great!
 
 Now, on your own, do the same with the editing form on the `show` page. Start with a new route:
 
 ```ruby
-get("/movies/:id/edit", { :controller => "movies", :action => "edit" })
-```
-
-or, sticking with our new syntax:
-
-```ruby
-get "/movies/:id/edit",  controller: "movies", action: "edit"
+get "/movies/:id/edit", controller: "movies", action: "edit"
 ```
 
 <aside markdown="1">
-Why are we using `get` on the new `edit` action? Because all this route is going is GETting the `edit` page for us, not making any database changes. But on the `edit` form, we have our `patch` method to update the database record.
+Why are we using `get` on the new `edit` action? Because all this route is doing is GETting the `edit` page for us, not making any database changes. But on the `edit` form, we have our `patch` method to update the database record.
 </aside>
 
-Then add the `edit` action, view template, and cut-paste the edit form onto the new view.
+Then add the `edit` action, view template, and cut-paste the edit form into the new view.
 
-Did you try that? Let's do it together now.
-
-First, I added to the routes:
-
-```ruby
-# config/routes.rb
-
-Rails.application.routes.draw do
-  resources :books
-
-  # Routes for the Movie resource:
-
-  get("/movies/new", { :controller => "movies", :action => "new" }))
-  get "/movies/:id/edit",  controller: "movies", action: "edit"
-
-  # CREATE
-  post("/movies", { :controller => "movies", :action => "create" })     
-  ...
-```
-{: mark_lines="8" }
-
-Then add the new action:
-
-```ruby
-# app/controllers/movies_controller.rb
-
-class MoviesController < ApplicationController
-  def new
-    render template: "movies/new.html.erb"
-  end
-
-  def edit
-    render template: "movies/edit.html.erb"
-  end
-  ...
-```
-{: mark_lines="8-10" }
-
-Then cut-paste the form to the view template:
-
-```erb
-<!-- app/views/movies/edit.html.erb -->
-
-<h2>
-  Edit movie
-</h2>
-
-<form action="/movies/<%= @the_movie.id %>"  method="post" >
-  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
-
-  <input type="hidden" name="_method" value="patch">
-  ...
-
-  <button>
-    Update movie
-  </button>
-</form>
-```
-
-Now try the new **/movies/[ID]/edit** route for one of the movies. We get an error `undefined method 'id' for nil:NilClass`. And we can see on the error page, that the problem is with the instance variable `@the_movie`. That's `nil` on our new page, because it doesn't exist in our `edit` action back in the controller!
+When you're done, try the new `/movies/[ID]/edit` route for one of the movies. We get an error `undefined method 'id' for nil:NilClass`. And we can see on the error page, that the problem is with the instance variable `@the_movie`. That's `nil` on our new page, because it doesn't exist in our `edit` action back in the controller!
 
 Back in the controller, we'll need to:
 
@@ -728,30 +607,27 @@ Back in the controller, we'll need to:
 # app/controllers/movies_controller.rb
 
 class MoviesController < ApplicationController
-  ...
+  # ...
   def edit
     @the_movie = Movie.where(id: params.fetch(:id))[0]
-    render template: "movies/edit.html.erb"
+    render template: "movies/edit"
   end
-  ...
+  # ...
 ```
-{: mark_lines="6" }
 
 <aside markdown="1">
 Why did we write `params.fetch(:id)`? Isn't the ID a string in the `params` hash? Well `params` is not actually a hash, it's a subclass of hash that Rails created. It can use _both_ symbols and strings. Most of the time you're going to see symbols.
 </aside>
 
-Just like we did in the `show` action (but all on one line now). And now the edit form should work. Try it out to be sure.
+And now the edit form should work. Try it out to be sure.
 
-## Form Errors 02:24:30 to 02:40:35
+## Form errors
 
-I want to take and aside, and talk about the user experience of filling out a form. What if somebody submits a movie with a blank title? Typically we don't want to allow that and we want to notify the user so they can correct it. 
+Let's take an aside, and talk about the user experience of filling out a form. What if somebody submits a movie with a blank title? Typically we don't want to allow that and we want to notify the user so they can correct it. 
 
-Let's look at what happens with the **/books** scaffold when we try adding a book with a blank title. Right now, it lets us do that if we use the form at **/books/new**. Why?
+Let's look at what happens with the `/books` scaffold when we try adding a book with a blank title. Right now, it lets us do that if we use the form at `/books/new`. We need to add **validations** to prevent this from happening! We can do that in the `Book` model:
 
-We need to add **validations** to prevent this from happening! We can do that in the `Book` model:
-
-```ruby
+```ruby{4-5}
 # app/models/book.rb
 
 class Book < ApplicationRecord
@@ -759,19 +635,16 @@ class Book < ApplicationRecord
   validates :description, presence: true
 end
 ```
-{: mark_lines="4-5" }
 
 With this, the `Book` model will not allow a `.save` to be called on it _unless_ there's a value for those columns.
 
-Now look at the UI when we mess up the form:
+Now look at the UI when we mess up the form. It should give you a list of everything that went wrong and how to correct it. Nice!
 
-![](/assets/new-book-form-error.png)
-
-How can we implement something like this on our **/movies/new** form? What did we do in AD1? 
+How can we implement something like this on our `/movies/new` form?
 
 First, let's add the validations to `Movie`:
 
-```ruby
+```ruby{4-5}
 # app/models/movie.rb
 
 class Movie < ApplicationRecord
@@ -779,15 +652,14 @@ class Movie < ApplicationRecord
   validates :description, presence: true
 end
 ```
-{: mark_lines="4-5" }
 
 Now, let's have a look at the `create` action in the `MoviesController`:
 
-```ruby
+```ruby{8-10}
 # app/controllers/movies_controller.rb
 
 class MoviesController < ApplicationController
-  ...
+  # ...
   def create
     the_movie = Movie.new
     the_movie.title = params.fetch("query_title")
@@ -801,11 +673,10 @@ class MoviesController < ApplicationController
       redirect_to("/movies", { :alert => the_movie.errors.full_messages.to_sentence })
     end
   end
-  ...
+  # ...
 ```
-{: mark_lines="8-10" }
 
-In AD1, we instantianted a `.new` record, take columns from the form with the query string and `params` hash, and assign them to the columns in our `the_movie` database record. Then we ask if `the_movie` is `.valid?`, which returns true or false based on whether all the validation rules in the `Movie` model pass or not.
+In AD1, we instantianted a `.new` record, take columns from the form with the query string and `params` hash, and assign them to the columns in our `the_movie` database record. Then we ask if `the_movie` is `.valid?`, which returns true or false based on whether all of the validation rules in the `Movie` model pass or not.
 
 If it _is_ valid, we `.save` and redirect. If it is _not_ valid, we just redirect. The only difference with the redirection is that we have different `:notice` and `:alert` messages. 
 
@@ -869,9 +740,9 @@ to this:
 redirect_to("/movies/new", { :alert => the_movie.errors.full_messages.to_sentence })
 ```
 
-Now, when the user trys to input a blank movie, they remain on the form and are given an error message. But all their progress on the form has been wiped out! What if they wrote a long description? That would be gone and they would need to retype it. Not great.
+Now, when the user trys to input a blank movie, they remain on the form and are given an error message. But all of their progress on the form has been wiped out! What if they wrote a long description? That would be gone and they would need to retype it. Not great.
 
-Let's figure out how to keep the data in the form. When `the_movie.valid?` is false, and I follow that `else` branch of the control flow in my controller `create` form, instead of wiping out all the values, I would like to prepopulate the form with the data that has already been entered. We could do this with `cookies`, but let's see another (maybe more straightforward) way.
+Let's figure out how to keep the data in the form. When `the_movie.valid?` is false, and I follow that `else` branch of the control flow in my controller `create` form, instead of wiping out all of the values, I would like to prepopulate the form with the data that has already been entered. We could do this with `cookies`, but let's see another (maybe more straightforward) way.
 
 When `the_movie.valid?` returns false, and we go to the `else` statement, you can see we are still using `the_movie` object to get the `.errors`. So `the_movie` object is still available to us in that branch. And prior to that `.valid?` method, we _already stored values_ in the attributes of this new object that we just instantiated:
 
