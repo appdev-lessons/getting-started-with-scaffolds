@@ -906,7 +906,7 @@ We get an error `undefined method 'errors' for nil`. That's because `@the_movie`
 
 We can solve this with a little hack:
 
-```ruby
+```ruby{3}
   # ...
   def new
     @the_movie = Movie.new
