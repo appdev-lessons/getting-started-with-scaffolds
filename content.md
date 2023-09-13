@@ -18,7 +18,7 @@
 
 Did you read the differences above? Good! Then [here is a walkthrough video for this project.](https://share.descript.com/view/nTBab1wF2JO)
 
-The lesson below contains some additional details, but the video should mostly guide you through the project.
+**As you watch the video, pause it frequently, read the associated text, and type out the code.**
 
 ## Getting started
 
