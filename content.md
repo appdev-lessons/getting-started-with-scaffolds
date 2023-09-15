@@ -88,7 +88,27 @@ That should work, and output:
 
 As usual, we need to `rake db:migrate` to run the pending migrations.
 
-Start your live app preview with `bin/dev` and visit `/movies`. This is the `movies#index` action page, where there is a form to add things to the table in our database.
+<div class="bg-red-100 py-1 px-5" markdown="1">
+STOP. Before you proceed, please add the following to the two new and edit forms on the index and show pages:
+
+```erb{3:(44-61)}
+<!-- app/views/movies/index.html.erb -->
+
+<form action="/insert_movie" method="post" data-turbo="false">
+```
+
+```erb{3:(66-83)}
+<!-- app/views/movies/show.html.erb -->
+
+<form action="/modify_movie/<%= @the_movie.id %>"  method="post" data-turbo="false">
+```
+
+We need to do this little hack because the video uses a Rails 6 version of the project, and in Rails 7 (current project version), ["Turbo"](https://turbo.hotwired.dev/) is enabled by default. Don't worry too much about this now, **soon we'll be using helper methods that will write all of this code for us**.
+</div>
+
+---
+
+Once you've made those changes to the forms, start your live app preview with `bin/dev` and visit `/movies`. This is the `movies#index` action page, where there is a form to add things to the table in our database.
 
 Try to add one. What happens? 
 
@@ -100,7 +120,7 @@ Can't verify CSRF token authenticity.
 ```
 
 <div class="bg-red-100 py-1 px-5" markdown="1">
-Note, in the walkthrough video, I get an error message in the browser. You won't see this error due to some Rails 7 updates. But nevertheless follow along with the next section to add the authenticity token to your POST request!
+Note, you will _only see this error_ if you added the `data-turbo="false"` to the form attributes.
 </div>
 
 ## HTTP POST authenticity
@@ -110,7 +130,7 @@ Let's have a look at that form in the `app/views/movies/index.html.erb` view tem
 ```erb{3}
 <!-- app/views/movies/index.html.erb -->
 
-    <form action="/insert_movie" method="post">
+    <form action="/insert_movie" method="post" data-turbo="false">
     
     <!-- ... -->
 
@@ -132,7 +152,7 @@ What's the solution? In the form, we're going to put a hidden input that has a "
 ```erb{4}
 <!-- app/views/movies/index.html.erb -->
 
-    <form action="/insert_movie" method="post">
+    <form action="/insert_movie" method="post" data-turbo="false">
       <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
     
     <!-- ... -->
@@ -234,14 +254,14 @@ Despite all of the similar URL paths in our routes (`"/movies/ID"`), none of the
 
 We do need to update the URLs now anywhere else they appear in our app. For instance, in the `app/views/movies/index.html.erb` page form, we need to change this:
 
-```erb
-<form action="/insert_movie" method="post">
+```erb{1:(16-27)}
+<form action="/insert_movie" method="post" data-turbo="false">
 ```
 
 to this:
 
-```erb
-<form action="/movies" method="post">
+```erb{1:(16-21)}
+<form action="/movies" method="post" data-turbo="false">
 ```
 
 And we don't need to worry about confusion, because Rails will look for the route with the matching `method` (here, that's POST, or `post`).
@@ -322,7 +342,7 @@ Fortunately though, Rails includes some fanciness that will let us fake this pre
 ```
 
 <div class="bg-red-100 py-1 px-5" markdown="1">
-Note, in the walkthrough video I used `data-method`, but in our Rails 7 update, this attribute is renamed `data-turbo-method`.
+Note, in the walkthrough video I used `data-method`, but in the current Rails 7 updated project, this attribute is renamed `data-turbo-method`. Again, this is because [Turbo](https://turbo.hotwired.dev/) is on by default in this newer Rails version.
 </div>
 
 Now go back and try the "Delete movie" link once more. It worked! (Unless you forgot to change `.at(0)` to `[0]` in the controller.)
@@ -336,13 +356,13 @@ Now let's fix the "Edit movie" form that we use to update a database entry. This
 ```erb
 <!-- app/views/movies/show.html.erb -->
 
-    <form action="/modify_movie/<%= @the_movie.id %>"  method="post" >
+    <form action="/modify_movie/<%= @the_movie.id %>" method="post" data-turbo="false">
 ```
 
 Right away, we know we can switch the `action` to point to the correct URL:
 
 ```erb{1:20-26}
-    <form action="/movies/<%= @the_movie.id %>"  method="post" >
+    <form action="/movies/<%= @the_movie.id %>" method="post" data-turbo="false">
 ```
 
 And now we're going to have the same conflict issue that we did with the delete method. We wish we could just change the `method` to `"patch"`, but that's not an option in plain HTML. We also can't just use `data-method="patch"`, similar to how we did it with the delete link.
@@ -350,14 +370,14 @@ And now we're going to have the same conflict issue that we did with the delete 
 Well, let's start by adding the authenticity token to our `post` request so it would actually work:
 
 ```erb{2}
-    <form action="/movies/<%= @the_movie.id %>"  method="post" >
+    <form action="/movies/<%= @the_movie.id %>" method="post" data-turbo="false">
         <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
 ```
 
 Now we need to add the following:
 
 ```erb{4}
-    <form action="/movies/<%= @the_movie.id %>"  method="post" >
+    <form action="/movies/<%= @the_movie.id %>" method="post" data-turbo="false">
         <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
 
         <input type="hidden" name="_method" value="patch">
@@ -574,7 +594,7 @@ To continue with our RCAV, let's go to the live app and navigate to `/movies/new
   Add a new movie
 </h2>
 
-<form action="/movies" method="post">
+<form action="/movies" method="post" data-turbo="false">
   <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
 
   <!-- ... -->
@@ -791,7 +811,7 @@ Let's copy-paste the form from our other `new.html.erb` template into this `with
   Add a new movie
 </h2>
 
-<form action="/movies" method="post">
+<form action="/movies" method="post" data-turbo="false">
   <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
 
   <div>
@@ -837,7 +857,7 @@ We didn't add the `alert:` to our `render template: "movies/with_errors"` line, 
   <li><%= msg %></li>
 <% end %>
 
-<form action="/movies" method="post">
+<form action="/movies" method="post" data-turbo="false">
 ```
 
 Test out the form. Do you see error messages when you leave something blank? Does the form stay prepoulated? What about when you succeed? Are you redirected to the index page with your movie added to the table? Yes to all? Great!
