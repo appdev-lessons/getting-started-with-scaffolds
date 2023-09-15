@@ -88,7 +88,7 @@ That should work, and output:
 
 As usual, we need to `rake db:migrate` to run the pending migrations.
 
-<div class="bg-red-100 py-1 px-5" markdown="1">
+<div class="bg-red-100 py-1 px-5 bleed-full" markdown="1">
 STOP. Before you proceed, please add the following to the two new and edit forms on the index and show pages:
 
 ```erb{3:(44-61)}
