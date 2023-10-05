@@ -796,8 +796,8 @@ Now we create that new view template where we have access to the `@the_movie` ob
 ```erb
 <!-- app/views/movies/with_errors.html.erb -->
 
-<%= @the_movies.inspect %>
-<%= @the_movies.errors.full_messages.to_sentence %>
+<%= @the_movie.inspect %>
+<%= @the_movie.errors.full_messages.to_sentence %>
 ```
 
 And now, if we enter a movie with a blank title at `/movies/new`, we will be taken to our page with the `ActiveRecord` object and the errors. And we can see that the object does contain any information that the user filled out!
